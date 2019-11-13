@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import javax.ws.rs.GET;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -11,9 +13,27 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class RestAPI {
+	
+	/* Appel API */
+	
+	public String restProperties(String chaineCaractere) throws IOException {
+
+		String filename="/Users/Jules/Documents/Developpement/Eclipse_workspace/M1_Miage_Nantes/Projet_SopraSteria_Maven/tp1_soprasteria/src/main/resources/configuration.properties";
+		
+		Properties properties = new Properties();
+		
+		FileInputStream input = new FileInputStream(filename);
+		
+		properties.load(input);
+		return properties.getProperty("rest.base.url").concat(chaineCaractere);
+				
+	}
+	
 
 	/* Test Appel API */
+	@GET
 	public void testPong() {
+	
 		
 	}
 	
