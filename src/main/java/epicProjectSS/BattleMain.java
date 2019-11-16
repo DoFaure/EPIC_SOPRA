@@ -22,6 +22,7 @@ public class BattleMain {
 
 		try {
 
+
 				if(cmd.hasOption("p")) {
 					System.out.println("pong");
 				}

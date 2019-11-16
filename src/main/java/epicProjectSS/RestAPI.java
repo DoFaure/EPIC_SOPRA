@@ -21,6 +21,7 @@ public class RestAPI {
 		properties.load(input);
 		return properties.getProperty("rest.base.url").concat(chaineCaractere);
 
+
 	}
 	
 
