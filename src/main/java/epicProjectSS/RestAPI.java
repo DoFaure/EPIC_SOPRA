@@ -6,12 +6,6 @@ import java.util.Properties;
 
 import javax.ws.rs.GET;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
 public class RestAPI {
 	
 	/* Appel API */
@@ -26,7 +20,7 @@ public class RestAPI {
 		
 		properties.load(input);
 		return properties.getProperty("rest.base.url").concat(chaineCaractere);
-				
+
 	}
 	
 
