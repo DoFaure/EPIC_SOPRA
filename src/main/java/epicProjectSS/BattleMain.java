@@ -3,8 +3,6 @@ package epicProjectSS;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import javax.ws.rs.GET;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -23,6 +21,8 @@ public class BattleMain {
 	     CommandLine cmd = parser.parse( options, args);
 
 		try {
+
+
 				if(cmd.hasOption("p")) {
 					System.out.println("pong");
 				}
