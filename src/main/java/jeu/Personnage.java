@@ -11,6 +11,10 @@ public class Personnage {
 		pointsVie = ptsVie;
 	}
 
+	public void attaqueBase() {
+
+	}
+
 	public int getPointsVie() {
 		return pointsVie;
 	}
