@@ -2,18 +2,21 @@ package jeu;
 
 public class Personnage {
 
-	int pointsVie;
-	int pointsAction = 1;
 	String nomPersonnage;
 
-	public Personnage(String nom, int ptsVie) {
-		nomPersonnage = nom;
-		pointsVie = ptsVie;
+	int maxPA = 4;
+	int minPA = 0;
+	int pointsAction;
+
+	int maxPV;
+	int minPV = 0;
+	int pointsVie;
+
+
+	public Personnage() {
+
 	}
 
-	public void attaqueBase() {
-
-	}
 
 	public int getPointsVie() {
 		return pointsVie;
@@ -37,6 +40,14 @@ public class Personnage {
 
 	public void setNomPersonnage(String nomPersonnage) {
 		this.nomPersonnage = nomPersonnage;
+	}
+
+	public int getMaxPV() {
+		return maxPV;
+	}
+
+	public void setMaxPV(int maxPV) {
+		this.maxPV = maxPV;
 	}
 
 }

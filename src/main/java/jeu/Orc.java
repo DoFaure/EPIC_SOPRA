@@ -2,8 +2,14 @@ package jeu;
 
 public class Orc extends Personnage {
 
-	public Orc(String nom, int ptsVie) {
-		super(nom, ptsVie);
+	public Orc() {
+		super.nomPersonnage = "Orc";
+		super.setPointsVie(30);
+		super.setPointsAction(1);
+		super.setMaxPV(30);
+	}
+
+	public void attaqueBase() {
 
 	}
 

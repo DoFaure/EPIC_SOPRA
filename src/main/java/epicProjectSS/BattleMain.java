@@ -8,6 +8,8 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import jeu.Orc;
+
 public class BattleMain {
 	
 	public static void main(String[] args) throws IOException, ParseException {
@@ -28,6 +30,8 @@ public class BattleMain {
 		String idPartie = rest.idPartie(idEquipe);
 
 		options.addOption("p", false, "");
+		options.addOption("Reponse_API", false, "");
+		options.addOption("orc", false, "");
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine commande = parser.parse(options, args);
@@ -62,6 +66,13 @@ public class BattleMain {
 
 			System.out.println("\nNom Adversaire : \n" + rest.nomAdversaire(idPartie, rest.idEquipe("test", "test")));
 			
+		}
+
+		if (commande.hasOption("orc")) {
+			Orc orc = new Orc();
+
+			System.out.println("Point de vie de l'ORC : " + orc.getMaxPV());
+
 		}
 
 
