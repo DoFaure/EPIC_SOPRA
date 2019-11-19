@@ -22,6 +22,7 @@ public class BattleMain {
 
 		if (commande.hasOption("p")) {
 			rest.testPong();
+			rest.idEquipe("{test}", "{test}");
 		}
 
 	}
