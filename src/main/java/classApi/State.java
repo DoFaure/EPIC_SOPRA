@@ -1,9 +1,14 @@
 package classApi;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import epicProjectSS.*;
 
 public class State {
 	
+	@JsonProperty("type")
 	String type;
+	
+	@JsonProperty("remainingDuration")
 	int remainingDuration;
 	
 	public String getType() {
