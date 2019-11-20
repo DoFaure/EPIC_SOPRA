@@ -1,6 +1,9 @@
 package classApi;
-import epicProjectSS.*;
+
+import java.util.List;
 
 public class EpicHero {
+
+	List<State> states;
 
 }
