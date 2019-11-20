@@ -19,13 +19,7 @@ public class BattleMain {
 		RestAPI rest = new RestAPI();
 		
 		/* Notre equipe */
-		String idEquipe = rest.idEquipe("test", "test");
-
-		/* Renseigner les id equipes adverse */
-		String idEquipe1 = rest.idEquipe("test", "test");
-		String idEquipe2 = rest.idEquipe("test", "test");
-		String idEquipe3 = rest.idEquipe("test", "test");
-		String idEquipe4 = rest.idEquipe("test", "test");
+		String idEquipe = rest.idEquipe("The%20Imps", "Rud3=W");
 
 		String idPartie = rest.idPartie(idEquipe);
 
@@ -38,7 +32,6 @@ public class BattleMain {
 
 		if (commande.hasOption("p")) {
 			System.out.println("Test Pong : \n" + rest.testPong());
-
 		}
 
 		if (commande.hasOption("Reponse_API")) {
