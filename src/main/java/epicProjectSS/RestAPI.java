@@ -10,6 +10,14 @@ import javax.ws.rs.client.ClientBuilder;
 
 import classApi.Board;
 
+/*********************************
+ * 
+ * @author Jules
+ * 
+ *         ok
+ *
+ */
+
 public class RestAPI {
 
 	/* Création du client pour l'appel API */
@@ -27,6 +35,7 @@ public class RestAPI {
 		return input;
 
 	}
+
 
 	/*
 	 * Méthode pour les appels URL API Rest et renvoi des retours des appels
