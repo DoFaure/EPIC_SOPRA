@@ -9,9 +9,5 @@ public class Pretre extends Personnage {
 		super.setMaxPV(20);
 	}
 
-	public void attaqueBase() {
-
-	}
-
 
 }

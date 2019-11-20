@@ -10,8 +10,5 @@ public class Garde extends Personnage {
 		super.setMaxPV(20);
 	}
 
-	public void attaqueBase() {
-
-	}
-
+	
 }

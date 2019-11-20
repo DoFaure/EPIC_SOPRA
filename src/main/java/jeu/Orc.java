@@ -9,9 +9,5 @@ public class Orc extends Personnage {
 		super.setMaxPV(30);
 	}
 
-	public void attaqueBase() {
-
-	}
-
 
 }

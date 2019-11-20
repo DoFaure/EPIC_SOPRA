@@ -49,5 +49,9 @@ public class Personnage {
 	public void setMaxPV(int maxPV) {
 		this.maxPV = maxPV;
 	}
+	
+	public void attaqueDeBase() {
+		
+	}
 
 }
