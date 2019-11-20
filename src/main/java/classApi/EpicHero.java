@@ -2,16 +2,35 @@ package classApi;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class EpicHero {
 	
+	@JsonProperty("fighterClass")
 	String fighterClass;
+
+	@JsonProperty("orderNumberInTeam")
 	int orderNumberInTeam;
+
+	@JsonProperty("isDead")
 	boolean isDead;
+
+	@JsonProperty("maxAvailableMana")
 	int maxAvailableMana;
+
+	@JsonProperty("maxAvailableLife")
 	int maxAvailableLife;
+
+	@JsonProperty("currentMana")
 	int currentMana;
+
+	@JsonProperty("currentLife")
 	int currentLife;
+
+	@JsonProperty("states")
 	List<State> states;
+
+	@JsonProperty("fighterId")
 	int fighterID;
 	
 	public String getFighterClass() {

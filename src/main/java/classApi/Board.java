@@ -1,11 +1,13 @@
 package classApi;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Board {
 
-	Integer nbrTurmsLeft;
+	@JsonProperty("playerId")
 	int nbrTurnsLeft;
+	@JsonProperty("playerBoards")
 	List<EpicHeroesLeague> playerBoards;
 
 	public int getNbrTurnsLeft() {
@@ -23,5 +25,4 @@ public class Board {
 	public void setPlayerBoards(List<EpicHeroesLeague> playerBoards) {
 		this.playerBoards = playerBoards;
 	}
-
 }
