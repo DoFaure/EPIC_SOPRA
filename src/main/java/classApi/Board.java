@@ -1,11 +1,13 @@
 package classApi;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(value = { "playerMoves" })
 public class Board {
 
-	@JsonProperty("playerId")
+	@JsonProperty("nbrTurnsLeft")
 	int nbrTurnsLeft;
 	@JsonProperty("playerBoards")
 	List<EpicHeroesLeague> playerBoards;

@@ -96,12 +96,12 @@ public class RestAPI {
 	}
 
 	public Board plateauJeu(String idPartie) throws IOException {
-		return restProperties(Board.class, "game/board", idPartie, "?format=()");
+		return restProperties(Board.class, "game/board", idPartie);
 	}
 
 	/* A privilégier */
 	public Board plateauJeuEquipe(String idPartie, String idEquipe) throws IOException {
-		return restProperties(Board.class, "game/board", idPartie, idEquipe, "?format=()");
+		return restProperties(Board.class, "game/board", idPartie, idEquipe);
 	}
 
 	public String dernierCoupJouer(String idPartie, String idEquipe) throws IOException {

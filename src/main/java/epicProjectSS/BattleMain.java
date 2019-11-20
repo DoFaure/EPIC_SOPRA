@@ -31,6 +31,11 @@ public class BattleMain {
 		CommandLine commande = parser.parse(options, args);
 
 		if (commande.hasOption("p")) {
+
+			/* Récuperer l'argument de p */
+
+			String argument = commande.getOptionValue("p");
+
 			System.out.println("Test Pong : \n" + rest.testPong());
 		}
 
@@ -47,17 +52,18 @@ public class BattleMain {
 
 			System.out.println("\nTour Equipe, Indique qui doit jouer : \n" + rest.tourEquipe(idPartie, idEquipe));
 
-			System.out.println("\nPlateau Jeu de la partie Concerné : \n" + rest.plateauJeu(idPartie));
+			System.out.println("\nPlateau Jeu de toute les équipes : \n" + rest.plateauJeu(idPartie));
 
+			/* A privilégier */
 			System.out.println(
-					"\nPlateau Jeu Equipe : \n" + rest.plateauJeuEquipe(idPartie, rest.idEquipe("test", "test")));
+					"\nPlateau Jeu Equipe de la partie Concerné : \n" + rest.plateauJeuEquipe(idPartie, idEquipe));
 
 			System.out.println("\nDernier Coup Joué sur le Plateau : \n"
-					+ rest.dernierCoupJouer(idPartie, rest.idEquipe("test", "test")));
+					+ rest.dernierCoupJouer(idPartie, idEquipe));
 
 			System.out.println("\nDonner Coup à l'adversaire : \n" + rest.donnerCoup(idPartie, idEquipe, "coup"));
 
-			System.out.println("\nNom Adversaire : \n" + rest.nomAdversaire(idPartie, rest.idEquipe("test", "test")));
+			System.out.println("\nNom Adversaire : \n" + rest.nomAdversaire(idPartie, idEquipe));
 			
 		}
 
