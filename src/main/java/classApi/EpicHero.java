@@ -2,8 +2,10 @@ package classApi;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(value = { "action", "receivedAttacks", "diffMana", "diffLife" })
 public class EpicHero {
 	
 	@JsonProperty("fighterClass")
@@ -30,8 +32,8 @@ public class EpicHero {
 	@JsonProperty("states")
 	List<State> states;
 
-	@JsonProperty("fighterId")
-	int fighterID;
+	@JsonProperty("fighterID")
+	String fighterID;
 	
 	public String getFighterClass() {
 		return fighterClass;
@@ -81,10 +83,12 @@ public class EpicHero {
 	public void setStates(List<State> states) {
 		this.states = states;
 	}
-	public int getFighterID() {
+
+	public String getFighterID() {
 		return fighterID;
 	}
-	public void setFighterID(int fighterID) {
+
+	public void setFighterID(String fighterID) {
 		this.fighterID = fighterID;
 	}
 

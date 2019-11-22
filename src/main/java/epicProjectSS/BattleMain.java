@@ -37,19 +37,10 @@ public class BattleMain {
 
 			if (commande.hasOption("e")) {
 				String argument = commande.getOptionValue("e");
-				System.out.println("********************************************");
-				System.out.println("\n Lancement Jeu Contre BOT de niveau: " + argument);
-				System.out.println("********************************************");
-
 				moteurJeu.newPratice(argument);
-
 			}
 
 			if (commande.hasOption("m")) {
-
-				System.out.println("********************************************");
-				System.out.println("\n Lancement Jeu Contre ÉQUIPE ");
-				System.out.println("********************************************");
 
 				moteurJeu.newVersus();
 
@@ -80,7 +71,7 @@ public class BattleMain {
 				System.out
 						.println("\nDernier Coup Joué sur le Plateau : \n" + rest.dernierCoupJouer(idPartie, idEquipe));
 
-				System.out.println("\nDonner Coup à l'adversaire : \n" + rest.donnerCoup(idPartie, idEquipe, "coup"));
+				System.out.println("\nDonner Coup à l'adversaire : \n" + rest.actionJeu(idPartie, idEquipe, "ORC"));
 
 				System.out.println("\nNom Adversaire : \n" + rest.nomAdversaire(idPartie, idEquipe));
 

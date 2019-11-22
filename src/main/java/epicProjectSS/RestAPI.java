@@ -117,7 +117,7 @@ public class RestAPI {
 		return restProperties(String.class, "game/getlastmove", idPartie, idEquipe);
 	}
 
-	public String donnerCoup(String idPartie, String idEquipe, String move) throws IOException {
+	public String actionJeu(String idPartie, String idEquipe, String move) throws IOException {
 		return restProperties(String.class, "game/play", idPartie, idEquipe, move);
 	}
 
