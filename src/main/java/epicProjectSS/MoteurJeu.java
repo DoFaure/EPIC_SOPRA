@@ -725,13 +725,14 @@ public class MoteurJeu {
 					} else if (currentFighter.getCurrentMana() == 1) {
 						//On ne fait rien
 						choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();						
-
+						System.out.println(choixStrat);
 						System.out.println("DEBUG 1,2");
 					} else if (currentFighter.getCurrentMana() == 2) {
 						if (needHealFighter != null) {
 							//Si quelqu'un a besoin d'un heal
 							choixStrat = "A" + currentFighter.getRank() + ",HEAL,A" + needHealFighter.getRank();
 							System.out.println("DEBUG 1,3");
+							System.out.println(choixStrat);
 						} else {
 							//Sinon
 							//On ne fait rien
