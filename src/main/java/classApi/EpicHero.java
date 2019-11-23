@@ -35,14 +35,14 @@ public class EpicHero {
 	@JsonProperty("fighterID")
 	String fighterID;
 	
-	private Integer rank;
+	public Integer rank;
 
 	public Integer getRank() {
 		return rank;
 	}
 
-	public void setRank(Integer rank) {
-		this.rank = rank;
+	public void setRank(Integer a) {
+		this.rank = a;
 	}
 	public String getFighterClass() {
 		return fighterClass;
