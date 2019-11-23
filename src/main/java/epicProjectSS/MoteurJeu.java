@@ -193,6 +193,8 @@ public class MoteurJeu {
 
 			}
 
+			/* Déroulement Partie */
+
 			while (!arretPartie && nbTourOfficiel < 55) {
 
 				changementStatut = false;
@@ -459,7 +461,7 @@ public class MoteurJeu {
 		// R�cup�rations d'objetif
 		// R�cup�ration des statuts de notre �quipe
 		// Celui ayant le moins de PV
-		for (b = 0; b < joueur1.getFighters().size(); b++) {
+		for (b = 0; b < player1.getFighters().size(); b++) {
 			if (joueur1.getFighters().get(b).getIsDead() == false) {
 				if (lowerLifeFighter == null) {
 					lowerLifeFighter = joueur1.getFighters().get(b);
