@@ -9,35 +9,45 @@ import classApi.EpicHeroesLeague;
 public class MoteurJeu {
 
 	RestAPI rest = new RestAPI();
-	String idEquipe;
-	String idPartieCurrent;
-	String tour;
-	String listePerso;
-
-	String statutPartie;
-	boolean accesPartie = false;
-
 	Board board;
 
-	boolean arretPartie = false;
+	boolean fin = false, finInitialisation = false, noEffectsEnnemies = false, paladinAjoue = false;
 
-	int nombresTours = 1;
+	/*
+	 * EpicHeroesLeague player1 = null, player2 = null;
+	 * 
+	 * EpicHero fighter1 = null, fighter2 = null, fighter3 = null, enemyFighter1 =
+	 * null, enemyFighter2 = null, enemyFighter3 = null; EpicHero scaredEnemy =
+	 * null, currentFighter = null, needHealFighter = null, lowerLifeFighter = null,
+	 * targuetEnemy = null; EpicHero guardEnemy = null, scaredAlly = null, burntAlly
+	 * = null, healAlly = null, healEnemy = null, archerEnemy = null, chamanEnemy =
+	 * null;
+	 * 
+	 */
+
+	String idEquipe, idPartieCurrent;
+
+	String listePerso;
+	String statutPartie;
+
+	boolean arretPartie = false;
+	boolean accesPartie = false;
+	boolean changementStatut = false;
+
+	int nombresTours = 1, b, lifeDif;
+	int nbTourOfficiel = 1;
+
+	EpicHeroesLeague joueur1, joueur2;
 
 	/* Personnage */
-	EpicHeroesLeague joueur1;
-	EpicHeroesLeague joueur2;
 
-	EpicHero orc;
-	EpicHero pretre;
-	EpicHero garde;
+	EpicHero orc, pretre, garde;
 
-	EpicHero orc_ennemi;
-	EpicHero pretre_ennemi;
-	EpicHero garde_ennemi;
+	EpicHero orc_ennemi, pretre_ennemi, garde_ennemi;
 
-	EpicHero persoEnnemiChoisi;
+	EpicHero persoEnnemiChoisi1 = null, persoEnnemiChoisi2 = null, persoEnnemiChoisi3 = null;
 
-	EpicHero persoEquipeChoisi;
+	EpicHero persoEquipeChoisi1 = null, persoEquipeChoisi2 = null, persoEquipeChoisi3 = null;
 
 	public MoteurJeu() {
 		try {
@@ -51,7 +61,7 @@ public class MoteurJeu {
 
 	/* Combat contre bots */
 	public void newPratice(String nivBot) throws IOException {
-		
+
 		/* idEquipe = rest.idEquipe("The%20Imps", "Rud3=W"); */
 
 		int niveauBot = Integer.parseInt(nivBot);
@@ -60,16 +70,15 @@ public class MoteurJeu {
 
 			idPartieCurrent = rest.nouvellePartieBot(nivBot, idEquipe);
 
-			while(idPartieCurrent.equals("NA") && !accesPartie) {
+			while (idPartieCurrent.equals("NA") && !accesPartie) {
 				System.out.println(
 						"Erreur : Versus, jouer contre une équipe - Il n'y'a pas de partie ouverte pour le moment.");
 
 				idPartieCurrent = rest.nouvellePartieBot(nivBot, idEquipe);
 
-				if(!idPartieCurrent.equals("NA")) {
+				if (!idPartieCurrent.equals("NA")) {
 					accesPartie = true;
 				}
-
 
 			}
 
@@ -78,7 +87,6 @@ public class MoteurJeu {
 			System.out.println("***************************************************");
 
 			deroulementPartie(idPartieCurrent, idEquipe, "Contre Bots");
-
 
 		} else {
 			System.out.println("Error - Moteur Jeu - newPratice, le niveau du bot saisi n'est pas bon.");
@@ -109,15 +117,12 @@ public class MoteurJeu {
 			System.out.println(
 					"Erreur : Versus - jouer contre une équipe - Il n'y'a pas de partie ouverte pour le moment.");
 		}
-		
-
-
 
 	}
 
 	public void nextGame(String typeCombat) throws IOException {
-		
-		if(rest.idPartie(idEquipe).equals("NA")) {
+
+		if (rest.idPartie(idEquipe).equals("NA")) {
 			System.out.println(
 					"Erreur : Versus - jouer contre une équipe - Il n'y'a pas de partie ouverte pour le moment.");
 		} else {
@@ -132,7 +137,7 @@ public class MoteurJeu {
 
 		}
 	}
-	
+
 	public void deroulementPartie(String idPartieCurrent, String idEquipe, String TypePartie) throws IOException {
 
 		System.out.println("\n***************************************************");
@@ -143,30 +148,47 @@ public class MoteurJeu {
 
 		try {
 
-			/*
-			 * Récupération du Statut de la Partie board =
-			 * rest.plateauJeuEquipe(idPartieCurrent, idEquipe); nombreToursRestant =
-			 * board.getNbrTurnsLeft();
-			 */
+			/* Choix des personnages */
+			while (nbTourOfficiel <= 3) {
 
-			int nbTourOfficiel = 1;
+				System.out.println("\n\n*******************************************");
+				System.out.println("Affichage Information Tour : " + nbTourOfficiel);
 
-			board = rest.plateauJeuEquipe(idPartieCurrent, idEquipe);
+				changementStatut = false;
+				board = rest.plateauJeuEquipe(idPartieCurrent, idEquipe);
+				joueur1 = board.getPlayerBoards().get(0);
+				joueur2 = board.getPlayerBoards().get(1);
+				statutPartie = rest.tourEquipe(idPartieCurrent, idEquipe);
 
-			while (!arretPartie && nbTourOfficiel < 54) {
+				if (statutPartie.equals("CANTPLAY")) {
+					System.out.println("EN ATTENTE - NE PAS JOUER");
 
-				boolean changementStatut = false;
+					while (statutPartie.equals("CANTPLAY") && changementStatut == false) {
+						serverSleep();
+						statutPartie = rest.tourEquipe(idPartieCurrent, idEquipe);
+						if (statutPartie.equals("CANPLAY")) {
+							changementStatut = true;
+						}
+					}
+				}
+
+				if (statutPartie.equals("CANPLAY")) {
+					System.out.println("OK - ON PEUT JOUER");
+					choixPersonnage();
+					System.out.println("Choix Personnage " + nbTourOfficiel);
+					nbTourOfficiel++;
+				}
+
+			}
+
+			while (!arretPartie && nbTourOfficiel < 55) {
+
+				changementStatut = false;
 
 				board = rest.plateauJeuEquipe(idPartieCurrent, idEquipe);
 
-				if (board.getPlayerBoards().get(0).getPlayerName().equals("The Imps")) {
-					joueur1 = board.getPlayerBoards().get(0);
-					joueur2 = board.getPlayerBoards().get(1);
-
-				} else {
-					joueur1 = board.getPlayerBoards().get(1);
-					joueur2 = board.getPlayerBoards().get(0);
-				}
+				joueur1 = board.getPlayerBoards().get(0);
+				joueur2 = board.getPlayerBoards().get(1);
 
 				statutPartie = rest.tourEquipe(idPartieCurrent, idEquipe);
 
@@ -188,23 +210,32 @@ public class MoteurJeu {
 				}
 
 				if (statutPartie.equals("CANPLAY")) {
-					nbTourOfficiel++;
+
 					System.out.println("OK - ON PEUT JOUER");
-					canPlay(board);
+
+					if (nbTourOfficiel == 4) {
+						canPlay();
+					}
+
+					play();
+
+					nbTourOfficiel++;
+
 					System.out.println("*******************************************");
+
 				} else {
 					arretPartie = true;
 				}
-				nombresTours++;
+
 			}
 
 			if (statutPartie.equals("VICTORY")) {
 				affichageResultat("VOUS AVEZ GAGNÉ.");
 			} else if (statutPartie.equals("DEFEAT")) {
 				affichageResultat("VOUS AVEZ PERDU.");
-			}else if (statutPartie.equals("DRAW")) {
+			} else if (statutPartie.equals("DRAW")) {
 				affichageResultat("MATCH NUL.");
-			}else if (statutPartie.equals("CANCELLED")) {
+			} else if (statutPartie.equals("CANCELLED")) {
 				affichageResultat("MATCH ANNULÉ.");
 			}
 
@@ -222,114 +253,175 @@ public class MoteurJeu {
 
 	}
 
-	public void canPlay(Board board) throws IOException {
+	public void canPlay() throws IOException {
 
-		if (nombresTours <= 4) {
-			choixPersonnage();
-		} else if (nombresTours >= 4) {
-			play();
+		board = rest.plateauJeuEquipe(idPartieCurrent, idEquipe);
+
+		joueur1 = board.getPlayerBoards().get(0);
+		joueur2 = board.getPlayerBoards().get(1);
+
+		System.out.println("\n______________________________________");
+		System.out.println("***** EQUIPE 1 *****");
+
+		persoEquipeChoisi1 = joueur1.getFighters().get(0);
+		persoEquipeChoisi2 = joueur1.getFighters().get(1);
+		persoEquipeChoisi3 = joueur1.getFighters().get(2);
+
+		System.out.println(persoEquipeChoisi1.getFighterClass());
+		System.out.println(persoEquipeChoisi2.getFighterClass());
+		System.out.println(persoEquipeChoisi3.getFighterClass());
+
+		System.out.println("\n***** EQUIPE 2 *****");
+
+		persoEnnemiChoisi1 = joueur2.getFighters().get(0);
+		persoEnnemiChoisi2 = joueur2.getFighters().get(1);
+		persoEnnemiChoisi3 = joueur2.getFighters().get(2);
+
+		System.out.println(persoEnnemiChoisi1.getFighterClass());
+		System.out.println(persoEnnemiChoisi2.getFighterClass());
+		System.out.println(persoEnnemiChoisi3.getFighterClass());
+		System.out.println("______________________________________\n");
+
+		/* Partie Notre Equipe assimilié des get(x) à un personnage */
+		if (persoEquipeChoisi1.getFighterClass().equals("ORC")) {
+			orc = persoEquipeChoisi1;
+		} else if (persoEnnemiChoisi1.getFighterClass().equals("GUARD")) {
+			garde = persoEquipeChoisi1;
+		} else if (persoEnnemiChoisi1.getFighterClass().equals("PRIEST")) {
+			pretre = persoEquipeChoisi1;
 		}
-		
+
+		if (persoEquipeChoisi2.getFighterClass().equals("ORC")) {
+			orc = persoEquipeChoisi2;
+		} else if (persoEnnemiChoisi2.getFighterClass().equals("GUARD")) {
+			garde = persoEquipeChoisi2;
+		} else if (persoEnnemiChoisi2.getFighterClass().equals("PRIEST")) {
+			pretre = persoEquipeChoisi2;
+		}
+
+		if (persoEquipeChoisi3.getFighterClass().equals("ORC")) {
+			orc = persoEquipeChoisi3;
+		} else if (persoEnnemiChoisi3.getFighterClass().equals("GUARD")) {
+			garde = persoEquipeChoisi3;
+		} else if (persoEnnemiChoisi3.getFighterClass().equals("PRIEST")) {
+			pretre = persoEquipeChoisi3;
+		}
+
+		/* Partie Equipe Ennemi assimilié des get(x) à un personnage */
+		if (persoEnnemiChoisi1.getFighterClass().equals("ORC")) {
+			orc_ennemi = persoEnnemiChoisi1;
+		} else if (persoEnnemiChoisi1.getFighterClass().equals("GUARD")) {
+			garde_ennemi = persoEnnemiChoisi1;
+		} else if (persoEnnemiChoisi1.getFighterClass().equals("PRIEST")) {
+			pretre_ennemi = persoEnnemiChoisi1;
+		}
+
+		if (persoEnnemiChoisi2.getFighterClass().equals("ORC")) {
+			orc_ennemi = persoEnnemiChoisi2;
+		} else if (persoEnnemiChoisi2.getFighterClass().equals("GUARD")) {
+			garde_ennemi = persoEnnemiChoisi2;
+		} else if (persoEnnemiChoisi2.getFighterClass().equals("PRIEST")) {
+			pretre_ennemi = persoEnnemiChoisi2;
+		}
+
+		if (persoEnnemiChoisi3.getFighterClass().equals("ORC")) {
+			orc_ennemi = persoEnnemiChoisi3;
+		} else if (persoEnnemiChoisi3.getFighterClass().equals("GUARD")) {
+			garde_ennemi = persoEnnemiChoisi3;
+		} else if (persoEnnemiChoisi3.getFighterClass().equals("PRIEST")) {
+			pretre_ennemi = persoEnnemiChoisi3;
+		}
+
 	}
 
 	public void choixPersonnage() throws IOException {
 
-		if (nombresTours == 1) {
+		board = rest.plateauJeuEquipe(idPartieCurrent, idEquipe);
+
+		joueur1 = board.getPlayerBoards().get(0);
+		joueur2 = board.getPlayerBoards().get(1);
+
+		if (nbTourOfficiel == 1) { /* 1er tour, choix personnage 1 par défaut, == get(0) dans json */
 
 			rest.actionJeu(idPartieCurrent, idEquipe, "PRIEST");
-			listePerso = "Joueur 1 - Notre Equipe à choisi : PRETRE\n";
 
-		} else if (nombresTours == 2) {
+		} else if (nbTourOfficiel == 2) {
+			/*
+			 * == get(1)pour nous et mais get(0) pour ennemi afin de retourner le 1er
+			 * personnage choisi par l'équipe adverse
+			 */
 
-			/* Va chercher le personnage choisi par l'équipe 2 */
-			persoEnnemiChoisi = joueur2.getFighters().get(0);
+			persoEnnemiChoisi1 = joueur2.getFighters().get(0);
 
-			if (persoEnnemiChoisi.getFighterClass().contentEquals("GUARD")) {
-				garde_ennemi = persoEnnemiChoisi;
+			if (persoEnnemiChoisi1.getFighterClass().contentEquals("GUARD")) {
 				rest.actionJeu(idPartieCurrent, idEquipe, "GUARD");
 
-				listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : GARDE\n";
-
-			} else if (persoEnnemiChoisi.getFighterClass().contentEquals("ORC")) {
-				orc_ennemi = persoEnnemiChoisi;
+			} else if (persoEnnemiChoisi1.getFighterClass().contentEquals("ORC")) {
 				rest.actionJeu(idPartieCurrent, idEquipe, "ORC");
 
-				listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : ORC\n";
-
-			} else if (persoEnnemiChoisi.getFighterClass().contentEquals("PRIEST")) {
-				pretre_ennemi = persoEnnemiChoisi;
+			} else if (persoEnnemiChoisi1.getFighterClass().contentEquals("PRIEST")) {
+				rest.actionJeu(idPartieCurrent, idEquipe, "ORC");
 			}
 
+		} else if (nbTourOfficiel == 3) {
 
-		} else if (nombresTours == 3) {
+			/*
+			 * == get(2)pour nous et mais get(1) pour ennemi afin de retourner le 1er
+			 * personnage choisi par l'équipe adverse et du coup get(1) aussi pour nous afin
+			 * de savoir qui on a choisi
+			 */
 
-			/* Va chercher le personnage que l'on à choisi au 2ème tour */
-			persoEquipeChoisi = joueur1.getFighters().get(1);
-			/* Va chercher le personnage choisi par l'équipe 2 */
-			persoEnnemiChoisi = joueur2.getFighters().get(1);
+			/* rest.actionJeu(idPartieCurrent, idEquipe, "GUARD"); */
 
-			System.out.println("DEBUG 2");
+			persoEquipeChoisi2 = joueur1.getFighters().get(1);
 
-			/* Choix du personnage en fonction de leur tirage à partir du 2ème tour */
+			persoEnnemiChoisi2 = joueur2.getFighters().get(1);
 
-			if (persoEnnemiChoisi.getFighterClass().contentEquals("GUARD")) {
+			if (persoEnnemiChoisi2.getFighterClass().contentEquals("GUARD")) {
 
-				if (persoEquipeChoisi.getFighterClass().contentEquals("ORC")) {
+				if (persoEquipeChoisi2.getFighterClass().contentEquals("ORC")) {
 					rest.actionJeu(idPartieCurrent, idEquipe, "GUARD");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : GARDE\n";
 				} else {
 					rest.actionJeu(idPartieCurrent, idEquipe, "ORC");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : ORC\n";
 				}
 
-				garde_ennemi = persoEnnemiChoisi;
+			} else if (persoEnnemiChoisi2.getFighterClass().contentEquals("ORC")) {
 
-			} else if (persoEnnemiChoisi.getFighterClass().contentEquals("ORC")) {
-
-				if (persoEquipeChoisi.getFighterClass().contentEquals("ORC")) {
+				if (persoEquipeChoisi2.getFighterClass().contentEquals("ORC")) {
 					rest.actionJeu(idPartieCurrent, idEquipe, "GUARD");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : GARDE\n";
 				} else {
 					rest.actionJeu(idPartieCurrent, idEquipe, "ORC");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : ORC\n";
 				}
 
-				orc_ennemi = persoEnnemiChoisi;
+			} else if (persoEnnemiChoisi2.getFighterClass().contentEquals("PRIEST")) {
 
-			} else if (persoEnnemiChoisi.getFighterClass().contentEquals("PRIEST")) {
-				if (persoEquipeChoisi.getFighterClass().contentEquals("ORC")) {
+				if (persoEquipeChoisi2.getFighterClass().contentEquals("ORC")) {
 					rest.actionJeu(idPartieCurrent, idEquipe, "GUARD");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : GARDE\n";
 				} else {
 					rest.actionJeu(idPartieCurrent, idEquipe, "ORC");
-					listePerso = listePerso + "Joueur 1 - Notre Equipe à choisi : ORC\n";
 				}
-
-				pretre_ennemi = persoEnnemiChoisi;
 
 			}
 
-		}
-
-		if (nombresTours == 4) {
-			System.out.println(listePerso);
-			System.out.println("Joueur 2 - Equipe Ennemi à choisi : " + joueur2.getFighters().get(0).getFighterClass());
-			System.out.println("Joueur 2 - Equipe Ennemi à choisi : " + joueur2.getFighters().get(1).getFighterClass());
-			System.out.println("Joueur 2 - Equipe Ennemi à choisi : " + joueur2.getFighters().get(2).getFighterClass());
-		}
+			}
 
 	}
 
 	public void play() throws IOException {
-
-		rest.actionJeu(idPartieCurrent, idEquipe, "A1,ATTACK,E1$A2,ATTACK,E2$A3,ATTACK,E3");
-		System.out.println("DEBUG 10");
-
+		
 	}
 
+	public void battreBot1() throws IOException {
+		int reste = nbTourOfficiel % 2;
 
-	public void serverSleep()
-	{
+		if (reste == 0) {
+			rest.actionJeu(idPartieCurrent, idEquipe, "A1,ATTACK,E1$A2,ATTACK,E2$A3,ATTACK,E3");
+		} else {
+			rest.actionJeu(idPartieCurrent, idEquipe, "A1,DEFEND,E1$A2,ATTACK,E2$A3,ATTACK,E3");
+		}
+	}
+
+	public void serverSleep() {
 		try {
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
@@ -338,6 +430,5 @@ public class MoteurJeu {
 			System.out.println("Erreur time serveur");
 		}
 	}
-
 
 }
