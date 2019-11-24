@@ -24,7 +24,7 @@ public class BattleMain {
 		RestAPI rest = new RestAPI();
 		MoteurJeu moteurJeu = new MoteurJeu();
 		
-		options.addOption("e", true, "Pratice");
+		options.addOption("b", true, "Pratice");
 		options.addOption("m", false, "Versus");
 		options.addOption("Reponse_API", false, "Test");
 
@@ -35,8 +35,8 @@ public class BattleMain {
 
 			commande = parser.parse(options, args);
 
-			if (commande.hasOption("e")) {
-				String argument = commande.getOptionValue("e");
+			if (commande.hasOption("b")) {
+				String argument = commande.getOptionValue("b");
 				moteurJeu.newPratice(argument);
 			}
 
@@ -77,7 +77,7 @@ public class BattleMain {
 
 			}
 
-		} catch (ParseException e) {
+		} catch (ParseException b) {
 			// TODO Auto-generated catch block
 			System.out.println("Erreur - Battle Main - Arguments saisi non présent dans Battle Main");
 		}
