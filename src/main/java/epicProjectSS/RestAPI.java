@@ -23,7 +23,7 @@ public class RestAPI {
 	/* Création du client pour l'appel API */
 	private Client client = ClientBuilder.newClient();
 	
-	String filename = "/Users/Jules/Documents/Developpement/Eclipse_workspace/M1_Miage_Nantes/Projet_SopraSteria_Maven/EPIC_SOPRA/src/main/resources/configuration.properties";
+	String filename = "/Users/dorianfaure/eclipse-workspace/EPIC_SOPRA/src/main/resources/configuration.properties";
 
 	Properties properties = new Properties();
 

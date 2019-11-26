@@ -5,6 +5,7 @@ import java.io.IOException;
 import classApi.Board;
 import classApi.EpicHero;
 import classApi.EpicHeroesLeague;
+import classApi.State;
 
 public class MoteurJeu {
 
@@ -12,8 +13,8 @@ public class MoteurJeu {
 	Board board;
 
 	/******************************/
-	EpicHero scaredEnemy = null, currentFighter = null, needHealFighter = null, lowerLifeFighter = null,
-			targuetEnemy = null;
+	EpicHero scaredEnemy = null, hero = null, needHealFighter = null, lowerLifeFighter = null,
+			targetEnemy = null;
 
 	EpicHero guardEnemy = null, scaredAlly = null, burntAlly = null, healAlly = null, healEnemy = null,
 			archerEnemy = null, chamanEnemy = null, orcEnemy = null;
@@ -347,18 +348,18 @@ public class MoteurJeu {
 		}
 
 		fighter1 = persoEquipeChoisi1;
-		fighter1.setRank(1);
+		fighter1.setOrderNumberInTeam(1);
 		fighter2 = persoEquipeChoisi2;
-		fighter2.setRank(2);
+		fighter2.setOrderNumberInTeam(2);
 		fighter3 = persoEquipeChoisi3;
-		fighter3.setRank(3);
+		fighter3.setOrderNumberInTeam(3);
 
 		enemyFighter1 = persoEnnemiChoisi1;
-		enemyFighter1.setRank(1);
+		enemyFighter1.setOrderNumberInTeam(1);
 		enemyFighter2 = persoEnnemiChoisi2;
-		enemyFighter2.setRank(2);
+		enemyFighter2.setOrderNumberInTeam(2);
 		enemyFighter3 = persoEnnemiChoisi3;
-		enemyFighter3.setRank(3);
+		enemyFighter3.setOrderNumberInTeam(3);
 
 	}
 
@@ -440,24 +441,20 @@ public class MoteurJeu {
 		player1 = joueur1;
 		player2 = joueur2;
 
-		scaredEnemy = null;
-		choixStrat = null;
-		currentFighter = null;
+		
 		needHealFighter = player1.getFighters().get(0);
 		lowerLifeFighter = player1.getFighters().get(0);
-		targuetEnemy = null;
+		targetEnemy = null;
 		scaredAlly = null;
 		envoiStratServeur = "";
-		guardEnemy = null;
 		burntAlly = null;
 		healAlly = null;
 		noEffectsEnnemies = true;
 		healEnemy = null;
-		archerEnemy = null;
+		scaredEnemy = null;
 		lifeDif = 5000;
 		paladinAjoue = false;
-		chamanEnemy = null;
-		orcEnemy = null;
+	
 		
 		// Récupérations d'objetif
 		// Récupération des statuts de notre équipe
@@ -479,30 +476,26 @@ public class MoteurJeu {
 		System.out.println("Le lowerLifeFighter est le " + lowerLifeFighter.getFighterClass());
 		
 		//On identifie le heal allié, s'il n'y en a pas healAlly = null
-		/*
-		 * for (int a = 0 ; a < 3 ; a++) { if
-		 * (player1.getFighters().get(a).getFighterClass().contentEquals("HEAL")) {
-		 * healAlly = player1.getFighters().get(a); } }
-		 */
+
 		
 		//On identifie le heal allié, s'il n'y en a pas healAlly = null
 		for (int a = 0 ; a < 3 ; a++) {
-			if (player1.getFighters().get(a).getFighterClass().contentEquals("HEAL")) {
+			if (player1.getFighters().get(a).getFighterClass().contentEquals("PRIEST")) {
 				healAlly = player1.getFighters().get(a);
 			}
 		}
 		
 		//Le brulé avec le moins de PV
-		for (b = 0; b < player1.getFighters().size(); b++) {
-			if (player1.getFighters().get(b).getIsDead() == false) {
-				if (player1.getFighters().get(b).getStates() != null) {
-					for(int c = 0; c < player1.getFighters().get(b).getStates().size(); c++) {
-						if (player1.getFighters().get(b).getStates().get(c).getType().contentEquals("BURNING")) {
+		for (int z = 0; z < player1.getFighters().size(); z++) {
+			if (player1.getFighters().get(z).getIsDead() == false) {
+				if (player1.getFighters().get(z).getStates() != null) {
+					for(int c = 0; c < player1.getFighters().get(z).getStates().size(); c++) {
+						if (player1.getFighters().get(z).getStates().get(c).getType().contentEquals("BURNING")) {
 							if (burntAlly == null) {
-								burntAlly = player1.getFighters().get(b);
+								burntAlly = player1.getFighters().get(z);
 							} else {
-								if (player1.getFighters().get(b).getCurrentLife() < burntAlly.getCurrentLife()) {
-									burntAlly = player1.getFighters().get(b);
+								if (player1.getFighters().get(z).getCurrentLife() < burntAlly.getCurrentLife()) {
+									burntAlly = player1.getFighters().get(z);
 								}
 							}
 						}
@@ -511,128 +504,75 @@ public class MoteurJeu {
 				
 			}
 		}
-		
-		
 		//Est-ce que celui ayant perdu le plus de PV a perdu plus de 4PV (= ayant besoin d'un heal)
 		if (lowerLifeFighter.getMaxAvailableLife() - lowerLifeFighter.getCurrentLife() >= 4) {
 			needHealFighter = lowerLifeFighter;
 		}
-		
-		
-		//Statut effrayé (dans notre équipe)
-		if (fighter1.getStates() != null) {
-			for(b = 0; b < fighter1.getStates().size(); b++) {
-				if (fighter1.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredAlly = fighter1;
+	
+		// On vérifie si un allié n'est pas effrayé
+		for(EpicHero ally : player1.getFighters()) {
+			if(!ally.getIsDead() && ally.getStates() != null) {
+				for(State state : ally.getStates()) {
+					if(state.getType().equalsIgnoreCase("SCARED")) {
+						scaredAlly = ally;
+					}
 				}
+
 			}
 		}
-		if (fighter2.getStates() != null) {
-			for(b = 0; b < fighter2.getStates().size(); b++) {
-				if (fighter2.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredAlly = fighter2;
+
+		
+		for (EpicHero enemy : player2.getFighters()){
+			//On identifie le guardien ennemi, s'il n'y en a pas guardEnemy = null
+			if(enemy.getFighterClass().contentEquals("GUARD")) {
+				guardEnemy = enemy;
+			}
+			//On identifie le heal ennemi, s'il n'y en a pas healEnemy = null
+			if(enemy.getFighterClass().contentEquals("PRIEST")) {
+				healEnemy = enemy;
+			}
+			//On identifie l'orc ennemi, s'il n'y en a pas orcEnemy = null
+			if(enemy.getFighterClass().contentEquals("ORC")) {
+				orcEnemy = enemy;
+			}				
+			//Récupération des statuts de l'équipe ennemie
+			//Statut effrayé
+			if (!enemy.getIsDead() && enemy.getStates() != null) {
+				for (State state : enemy.getStates()) {
+					if(state.getType().equals("SCARED")){
+						scaredEnemy = enemy;
+						System.out.println("SCARED - " + enemy.getFighterClass() );
+					}
 				}
-			}
-		}
-		if (fighter3.getStates() != null) {
-			for(b = 0; b < fighter3.getStates().size(); b++) {
-				if (fighter3.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredAlly = fighter3;
-				}
-			}
-		}
-		
-		
-		
-		//Récupération des statuts de l'équipe ennemie
-		//Statut effrayé
-		if (enemyFighter1.getStates() != null) {
-			for(b = 0; b < enemyFighter1.getStates().size(); b++) {
-				
-				
-				if (enemyFighter1.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredEnemy = enemyFighter1;
-					System.out.println("SCARED - 1");
-				}
-			}
-		}
-		if (enemyFighter2.getStates() != null) {
-			for(b = 0; b < enemyFighter2.getStates().size(); b++) {
-				if (enemyFighter2.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredEnemy = enemyFighter2;
-					System.out.println("SCARED - 2");
-				}
-			}
-		}
-		if (enemyFighter3.getStates() != null) {
-			for(b = 0; b < enemyFighter3.getStates().size(); b++) {
-				if (enemyFighter3.getStates().get(b).getType().contentEquals("SCARED")) {
-					scaredEnemy = enemyFighter3;
-					System.out.println("SCARED - 3");
-				}
-			}
-		}
-		
-		//On identifie l'archer ennemi, s'il n'y en a pas archerEnemy = null
-		for (int a = 0 ; a < 3 ; a++) {
-			if (player2.getFighters().get(a).getFighterClass().contentEquals("ARCHER")) {
-				archerEnemy = player2.getFighters().get(a);
-				System.out.println("ARCHER");
-			}
-		}
-		System.out.println("Il y a un archer ennemi : " + archerEnemy);
-		
-		//On identifie le chaman ennemi, s'il n'y en a pas archerEnemy = null
-		for (int a = 0 ; a < 3 ; a++) {
-			if (player2.getFighters().get(a).getFighterClass().contentEquals("CHAMAN")) {
-				chamanEnemy = player2.getFighters().get(a);
-			}
-		}
-		System.out.println("Il y a un chaman ennemi : " + chamanEnemy);
-		
-		//On identifie le guardien ennemi, s'il n'y en a pas guardEnemy = null
-		for (int a = 0 ; a < 3 ; a++) {
-			if (player2.getFighters().get(a).getFighterClass().contentEquals("GUARD")) {
-				guardEnemy = player2.getFighters().get(a);
-			}
+			}	
 		}
 		System.out.println("Il y a un garde ennemi : " + guardEnemy);
 		
-		//On identifie le heal ennemi, s'il n'y en a pas healEnemy = null
-		for (int a = 0 ; a < 3 ; a++) {
-			if (player2.getFighters().get(a).getFighterClass().contentEquals("PRIEST")) {
-				healEnemy = player2.getFighters().get(a);
-			}
-		}
 		System.out.println("Il y a un prêtre ennemi : " + healEnemy);
 		
-		//On identifie l'orc ennemi, s'il n'y en a pas orcEnemy = null
-		for (int a = 0 ; a < 3 ; a++) {
-			if (player2.getFighters().get(a).getFighterClass().contentEquals("ORC")) {
-				orcEnemy = player2.getFighters().get(a);
-			}
-		}
 		System.out.println("Il y a un orc ennemi : " + orcEnemy);
 		
+		
 		//Cible de prédilection (à utiliser quand aucun champion ennemi n'est effrayé)
-		//Si il n'y a pas de prêtre dans l'équipe ennemie, on tape toujours la méme cible jusqu'é ce qu'elle meure
+		//Si il n'y a pas de prêtre dans l'équipe ennemie, on tape toujours la méme cible jusqu'à ce qu'elle meure
 		if (healEnemy == null) {
-			for(b = 0; b < player2.getFighters().size(); b++) {
+			for (EpicHero enemy : player2.getFighters()){
 				//On vérifie que le champion n'est pas mort
-				if (player2.getFighters().get(b).getIsDead() == false) {
+				if (!enemy.getIsDead()) {
+					System.out.println(enemy.getFighterClass() + "a pour état de santé : " + enemy.getCurrentLife() + "c'est à dire mort ? " + enemy.getIsDead());
 					//on cible en priorité l'orc ennemi
-					if (player2.getFighters().get(b).getFighterClass().contentEquals("PALADIN")) {
-						targuetEnemy = player2.getFighters().get(b);
+					if (enemy.getFighterClass().contentEquals("PALADIN")) {
+						targetEnemy = enemy;
 						break;
-					} else if (player2.getFighters().get(b).getFighterClass().contentEquals("ORC")) {
-						targuetEnemy = player2.getFighters().get(b);
+					} else if (enemy.getFighterClass().contentEquals("ORC")) {
+						targetEnemy = enemy;
 						break;
 					} else {
-						if (targuetEnemy == null) {
-							targuetEnemy = player2.getFighters().get(b);
+						if (targetEnemy == null) {
+							targetEnemy = enemy;
 						} else {
-							if (targuetEnemy.getCurrentLife() > player2.getFighters().get(b).getCurrentLife()) {
-								targuetEnemy = player2.getFighters().get(b);
+							if (targetEnemy.getCurrentLife() > enemy.getCurrentLife()) {
+								targetEnemy = enemy;
 							}
 						}
 					}
@@ -640,20 +580,20 @@ public class MoteurJeu {
 			}
 		} else {
 			//Sinon s'il n'y a pas de heal, on frappe toujours le champion ayant le plus de vie
-			for(b = 0; b < player2.getFighters().size(); b++) {
+			for (EpicHero enemy : player2.getFighters()){
 				//On vérifie que le champion n'est pas mort
-				if (player2.getFighters().get(b).getIsDead() == false) {
+				if (!enemy.getIsDead()) {
 					//On cible en priorité ceux qui n'ont pas perdu de vie
-					lifeDif = player2.getFighters().get(b).getMaxAvailableLife() - player2.getFighters().get(b).getCurrentLife();
+					lifeDif = enemy.getMaxAvailableLife() - enemy.getCurrentLife();
 					if (lifeDif == 0) {
-						targuetEnemy = player2.getFighters().get(b);
+						targetEnemy = enemy;
 					} else {
-						if (targuetEnemy != null) {
-							if(player2.getFighters().get(b).getMaxAvailableLife() - player2.getFighters().get(b).getCurrentLife() < targuetEnemy.getMaxAvailableLife() - targuetEnemy.getCurrentLife()) {
-								targuetEnemy = player2.getFighters().get(b);
+						if (targetEnemy != null) {
+							if(enemy.getMaxAvailableLife() - enemy.getCurrentLife() < targetEnemy.getMaxAvailableLife() - targetEnemy.getCurrentLife()) {
+								targetEnemy = enemy;
 							}
 						} else {
-							targuetEnemy = player2.getFighters().get(b);
+							targetEnemy = enemy;
 						}
 					}
 				}
@@ -662,7 +602,7 @@ public class MoteurJeu {
 		//Fin des récupérations d'objetif
 		
 		
-		//S'il y a des champions ennemis avec des capacités é effet (hors ORC)
+		//S'il y a des champions ennemis avec des capacités à effet (hors ORC)
 		for(b = 0; b < player2.getFighters().size(); b++) {		
 			if (player2.getFighters().get(b).getFighterClass().contentEquals("PALADIN") || player2.getFighters().get(b).getFighterClass().contentEquals("ARCHER")) {
 				noEffectsEnnemies = false;
@@ -687,8 +627,7 @@ public class MoteurJeu {
 			System.out.println("Allié nécessitant une protection car effrayé : " + scaredAlly.getFighterClass());
 		} else {
 			System.out.println("Pas d'allié nécessitant une protection car effrayé");
-		}
-		
+		}	
 		if (guardEnemy != null) {
 			System.out.println("Guardien ennemi : " + guardEnemy.getFighterClass());
 		} else {
@@ -699,8 +638,8 @@ public class MoteurJeu {
 		} else {
 			System.out.println("Pas de champion ennemi effrayé");
 		}
-		if (targuetEnemy != null) {
-			System.out.println("Champion ennemi ciblé ce tour : " + targuetEnemy.getFighterClass() + ", " + targuetEnemy.getCurrentLife() + "HP et " + targuetEnemy.getCurrentMana() + "PM");
+		if (targetEnemy != null) {
+			System.out.println("Champion ennemi ciblé ce tour : " + targetEnemy.getFighterClass() + ", " + targetEnemy.getCurrentLife() + "HP et " + targetEnemy.getCurrentMana() + "PM");
 		} else {
 			System.out.println("Pas de champion ennemi ciblé ce tour");
 		}
@@ -709,77 +648,86 @@ public class MoteurJeu {
 		} else {
 			System.out.println("Pas de champion allié brûlé ce tour");
 		}
-		
-		for(int a = 0; a < player1.getFighters().size(); a++) {
-			player1.getFighters().get(a).setRank(a+1);
-			player2.getFighters().get(a).setRank(a+1);
-
-		}
-		
-		
+	
 		
 		//Pour chaque champion dans notre équipe
-		for(int a = 0; a < player1.getFighters().size(); a++) {
+		for (EpicHero hero : player1.getFighters()){
 			
-			//On récupére le champion courant dans la liste de nos champions
-			currentFighter = player1.getFighters().get(a);
-			
-			currentFighter.setRank(a+1);
-			player2.getFighters().get(a).setRank(a+1);
-			
-			System.out.println("Needheal : " + lowerLifeFighter.rank);
+			System.out.println("Needheal : " + lowerLifeFighter.getOrderNumberInTeam());
 			
 			
-			System.out.println("Champion : " + currentFighter.getFighterClass() + ", " + currentFighter.getCurrentLife() + "PV" + ", " + currentFighter.getCurrentMana() + "PM" + ", " + currentFighter.getRank() + "rank ");
+			System.out.println("Champion : " + hero.getFighterClass() + ", " + hero.getCurrentLife() + "PV" + ", " + hero.getCurrentMana() + "PM" + ", " + hero.getOrderNumberInTeam() + "rank ");
 			
 			
 			//Choix stratégiques
-			if (!currentFighter.getIsDead()) {
+			if (!hero.getIsDead()) {
 
 				// Si c'est un pretre
 
-				if (currentFighter.getFighterClass().contentEquals("PRIEST")) {
-					if (currentFighter.getCurrentMana() == 0) {
+				if (hero.getFighterClass().contentEquals("PRIEST")) {
+					if (hero.getCurrentMana() == 0) {
 						//On ne fait rien
-						choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+						choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 						System.out.println("DEBUG 1,1");
-					} else if (currentFighter.getCurrentMana() == 1) {
-						//On ne fait rien
-						choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();						
-						System.out.println(choixStrat);
-						System.out.println("DEBUG 1,2");
-					} else if (currentFighter.getCurrentMana() == 2) {
-						if (needHealFighter != null) {
-							//Si quelqu'un a besoin d'un heal
-							choixStrat = "A" + currentFighter.getRank() + ",HEAL,A" + needHealFighter.getRank();
+					} else if (hero.getCurrentMana() == 1) {
+						if(scaredEnemy != null){
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
+							System.out.println("DEBUG 1,2");
+							System.out.println(choixStrat);
+						}else {
+							//On ne fait rien
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();						
+							System.out.println(choixStrat);
+							System.out.println("DEBUG 1,2,1");
+						}
+						
+					} else if (hero.getCurrentMana() == 2) {
+						if(scaredEnemy != null && needHealFighter.getCurrentLife() <= 10){
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 1,3");
+							System.out.println(choixStrat);
+						}else if (needHealFighter != null) {
+							//Si quelqu'un a besoin d'un heal
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",HEAL,A" + needHealFighter.getOrderNumberInTeam();
+							System.out.println("DEBUG 1,3,1 = " + hero.getCurrentMana());
 							System.out.println(choixStrat);
 						} else {
 							//Sinon
 							//On ne fait rien
-							choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 							System.out.println("DEBUG 1,4");
 						}
-					} else if (currentFighter.getCurrentMana() == 3) {
-						if (needHealFighter != null) {
+					} else if (hero.getCurrentMana() == 3) {
+						if(scaredEnemy != null && needHealFighter.getCurrentLife() <= 1){
+						choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
+						System.out.println("DEBUG 1,5");
+						System.out.println(choixStrat);
+						}
+						else if (needHealFighter != null) {
 							//Si quelqu'un a besoin d'un heal
-							choixStrat = "A" + currentFighter.getRank() + ",HEAL,A" + lowerLifeFighter.getRank();
-							System.out.println("DEBUG 1,5");
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",HEAL,A" + lowerLifeFighter.getOrderNumberInTeam();
+							System.out.println("DEBUG 1,5,1");
+							
 						} else {
 							//Sinon
 							//On ne fait rien
-							choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
-							System.out.println("DEBUG 1,6");
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
+							System.out.println("DEBUG 1,5,2");
 						}
-					} else if (currentFighter.getCurrentMana() == 4) {
-						if (needHealFighter != null) {
+					} else if (hero.getCurrentMana() == 4) {
+						if(scaredEnemy != null && needHealFighter.getCurrentLife() <= 1){
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
+							System.out.println("DEBUG 1,6");
+							System.out.println(choixStrat);
+						}
+						else if (needHealFighter != null) {
 							//Si quelqu'un a besoin d'un heal
-							choixStrat = "A" + currentFighter.getRank() + ",HEAL,A" + needHealFighter.getRank();
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",HEAL,A" + needHealFighter.getOrderNumberInTeam();
 							System.out.println("DEBUG 1,7");
 						} else {
 							//Sinon
 							//On se met en défense
-							choixStrat = "A" + currentFighter.getRank() + ",DEFEND,A" + currentFighter.getRank();
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,A" + hero.getOrderNumberInTeam();
 							System.out.println("DEBUG 1,8");
 						}
 					}
@@ -787,54 +735,54 @@ public class MoteurJeu {
 					
 					
 					//Si c'est un orc
-				if (currentFighter.getFighterClass().contentEquals("ORC")) {
-						if (currentFighter.getCurrentMana() == 0) {
+				if (hero.getFighterClass().contentEquals("ORC")) {
+						if (hero.getCurrentMana() == 0) {
 							//On ne fait rien
-							choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 						System.out.println("DEBUG 2,1");
 						System.out.println(choixStrat);
-						} else if (currentFighter.getCurrentMana() == 1) {
+						} else if (hero.getCurrentMana() == 1) {
 							if (scaredEnemy != null) {
 								//Si il y a un ennemi effrayé, on l'attaque
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,2");
 							System.out.println(choixStrat);
 							} else {
 								//Sinon
 								//On ne fait rien
-								choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,3");
 							System.out.println(choixStrat);
 							}						
-						} else if (currentFighter.getCurrentMana() == 2) {
+						} else if (hero.getCurrentMana() == 2) {
 							if (scaredEnemy != null) {
 								//Si il y a un ennemi effrayé, on l'attaque
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,4");
 							System.out.println(choixStrat);
 							} else  if (guardEnemy != null) {
 								//Sinon
 								System.out.println(guardEnemy != null);
 								//Si le guardien ennemi existe, n'est pas mort et a 0 PA on lance un hurlement
-								if (guardEnemy.getIsDead() == false & guardEnemy.getCurrentMana() == 0) {
-									choixStrat = "A" + currentFighter.getRank() + ",YELL,E" + guardEnemy.getRank();
+								if (!guardEnemy.getIsDead() && guardEnemy.getCurrentMana() == 0) {
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",YELL,E" + guardEnemy.getOrderNumberInTeam();
 								System.out.println("DEBUG 2,5");
 								System.out.println(choixStrat);
 								}else{
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",YELL,E" + targetEnemy.getOrderNumberInTeam();
 									System.out.println("DEBUG 2,5,1");
 									System.out.println(choixStrat);
 								}
 							} else {
 									//Sinon on attaque simplement la cible de prédilection
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + targetEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,6");
 							System.out.println(choixStrat);
 							}
-						} else if (currentFighter.getCurrentMana() == 3) {
+						} else if (hero.getCurrentMana() == 3) {
 							if (scaredEnemy != null) {
 								//Si il y a un ennemi effrayé, on l'attaque
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,7");
 							System.out.println(choixStrat);
 							} else  if (guardEnemy != null) {
@@ -842,24 +790,24 @@ public class MoteurJeu {
 								System.out.println(guardEnemy != null);
 								//Si le guardien ennemi existe, n'est pas mort et a 0 PA on lance un hurlement
 								if (guardEnemy.getIsDead() == false & guardEnemy.getCurrentMana() == 0) {
-									choixStrat = "A" + currentFighter.getRank() + ",YELL,E" + guardEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",YELL,E" + guardEnemy.getOrderNumberInTeam();
 								System.out.println("DEBUG 2,8");
 								System.out.println(choixStrat);
 								}else{
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",YELL,E" + targetEnemy.getOrderNumberInTeam();
 									System.out.println("DEBUG 2,8,1");
 									System.out.println(choixStrat);
 								}
 							} else {
 									//Sinon on attaque simplement la cible de prédilection
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + targetEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,9");
 							System.out.println(choixStrat);
 							}
-						} else if (currentFighter.getCurrentMana() == 4) {
+						} else if (hero.getCurrentMana() == 4) {
 							if (scaredEnemy != null) {
 								//Si il y a un ennemi effrayé, on l'attaque
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,10");
 							System.out.println(choixStrat);
 							} else  if (guardEnemy != null) {
@@ -867,17 +815,13 @@ public class MoteurJeu {
 								System.out.println(guardEnemy != null);
 								//Si le guardien ennemi existe, n'est pas mort et a 0 PA on lance un hurlement
 								if (guardEnemy.getIsDead() == false & guardEnemy.getCurrentMana() == 0) {
-									choixStrat = "A" + currentFighter.getRank() + ",YELL,E" + guardEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",YELL,E" + guardEnemy.getOrderNumberInTeam();
 								System.out.println("DEBUG 2,11");
 								System.out.println(choixStrat);
-								}else{
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
-									System.out.println("DEBUG 2,11,1");
-									System.out.println(choixStrat);
 								}
 							} else {
 									//Sinon on attaque simplement la cible de prédilection
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + targetEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 2,12");
 							System.out.println(choixStrat);
 							}
@@ -887,104 +831,104 @@ public class MoteurJeu {
 					
 					
 					//Si c'est un gardien
-					if (currentFighter.getFighterClass().contentEquals("GUARD")) {
-						if (currentFighter.getCurrentMana() == 0) {
+					if (hero.getFighterClass().contentEquals("GUARD")) {
+						if (hero.getCurrentMana() == 0) {
 							//On ne fait rien
-							choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+							choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 						System.out.println("DEBUG 3,1");
-						} else if (currentFighter.getCurrentMana() == 1) {
+						} else if (hero.getCurrentMana() == 1) {
 							if (scaredEnemy != null) {
 								//Si il y a un ennemi effrayé, on l'attaque
-								choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 							System.out.println("DEBUG 3,2");
 							} else {
 								//Sinon
 								//On ne fait rien
-								choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 							System.out.println("DEBUG 3,3");
 							}
-						} else if (currentFighter.getCurrentMana() == 2) {
-							if (scaredAlly != null & scaredAlly != currentFighter) {
+						} else if (hero.getCurrentMana() == 2) {
+							if (scaredAlly != null & scaredAlly != hero) {
 								//Si l'un de nos champions est effrayé (sauf le gardien lui-méme), on le protége en priorité
-								choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + scaredAlly.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + scaredAlly.getOrderNumberInTeam();
 							System.out.println("DEBUG 3,4");
-							} else if (needHealFighter != null & currentFighter.getCurrentLife() > 20 & needHealFighter != currentFighter) {
+							} else if (needHealFighter != null & hero.getCurrentLife() > 20 & needHealFighter != hero) {
 								//Si l'allié é protéger a moins de la moitié de ses vies
 								if (needHealFighter.getCurrentLife() < needHealFighter.getMaxAvailableLife() / 2) {
 									//On le protége
-									choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + needHealFighter.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + needHealFighter.getOrderNumberInTeam();
 									System.out.println("On protége un allié qui a moins de la moitié de sa vie");
 								System.out.println("DEBUG 3,5");
 								} else {
 									//Sinon on ne fait rien
-									choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 								System.out.println("DEBUG 3,6");
 								}
 							} else {
 								//Sinon on se met en défense si on a moins de 30PV
-								if (currentFighter.getCurrentLife() <= 30) {
-									choixStrat = "A" + currentFighter.getRank() + ",DEFEND,A" + currentFighter.getRank();
+								if (hero.getCurrentLife() <= 30) {
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",DEFEND,A" + hero.getOrderNumberInTeam();
 								System.out.println("DEBUG 3,7");
 								} else {
 									if (scaredEnemy != null) {
 										//Si il y a un ennemi effrayé, on l'attaque
-										choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+										choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 									System.out.println("DEBUG 3,8");
 									} else {
 										//Sinon on ne fait rien
-										choixStrat = "A" + currentFighter.getRank() + ",REST,A" + currentFighter.getRank();
+										choixStrat = "A" + hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam();
 									System.out.println("DEBUG 3,9");
 									}
 								}
 							}
-						} else if (currentFighter.getCurrentMana() == 3) {
-							if (scaredAlly != null & scaredAlly != currentFighter) {
+						} else if (hero.getCurrentMana() == 3) {
+							if (scaredAlly != null & scaredAlly != hero) {
 								//Si l'un de nos champions est effrayé, on le protége en priorité
-								choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + scaredAlly.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + scaredAlly.getOrderNumberInTeam();
 							System.out.println("DEBUG 3,10");
-							} else if (needHealFighter != null & currentFighter.getCurrentLife() > 20 & needHealFighter != currentFighter) {
+							} else if (needHealFighter != null & hero.getCurrentLife() > 20 & needHealFighter != hero) {
 								//Sinon si quelqu'un a besoin d'un heal et que l'allié é défendre a moins de 15PV on le protége (sauf si le guardien a moins de 20PV )
-								choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + needHealFighter.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + needHealFighter.getOrderNumberInTeam();
 							System.out.println("DEBUG 3,11");
 							} else {
 								//Sinon on se met en défense si on a moins de 15PV
-								if (currentFighter.getCurrentLife() <= 15) {
-									choixStrat = "A" + currentFighter.getRank() + ",DEFEND,A" + currentFighter.getRank();
+								if (hero.getCurrentLife() <= 15) {
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",DEFEND,A" + hero.getOrderNumberInTeam();
 								System.out.println("DEBUG 3,12");
 								} else if (scaredEnemy != null) {
 									//Si il y a un ennemi effrayé, on l'attaque
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 								System.out.println("DEBUG 3,13");
 								} else {
-									if (currentFighter != lowerLifeFighter & currentFighter.getCurrentLife() > 20) {
+									if (hero != lowerLifeFighter & hero.getCurrentLife() > 20) {
 										//On défend l'allié ayant le moins de PV si ce n'est pas nous (il faut qu'on ait + de 20PV)
-										choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + lowerLifeFighter.getRank();
+										choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + lowerLifeFighter.getOrderNumberInTeam();
 									System.out.println("DEBUG 3,14");
 									} else {
 										//On se met en défense
-										choixStrat = "A" + currentFighter.getRank() + ",DEFEND,A" + currentFighter.getRank();
+										choixStrat = "A" + hero.getOrderNumberInTeam() + ",DEFEND,A" + hero.getOrderNumberInTeam();
 									System.out.println("DEBUG 3,15");
 									}
 								}
 							}
-						} else if (currentFighter.getCurrentMana() == 4) {
+						} else if (hero.getCurrentMana() == 4) {
 							
 							if (scaredAlly != null) {
 								//Si l'un de nos champions est effrayé, on le protége en priorité
-								choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + scaredAlly.getRank();
-							} else if (needHealFighter != null & currentFighter.getCurrentLife() > 20) {
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + scaredAlly.getOrderNumberInTeam();
+							} else if (needHealFighter != null & hero.getCurrentLife() > 20) {
 								//Sinon si quelqu'un a besoin d'un heal et que l'allié é défendre a moins de 15PV on le protége (sauf si le guardien a moins de 20PV )
-								choixStrat = "A" + currentFighter.getRank() + ",PROTECT,A" + needHealFighter.getRank();
+								choixStrat = "A" + hero.getOrderNumberInTeam() + ",PROTECT,A" + needHealFighter.getOrderNumberInTeam();
 							} else {
 								//Sinon on se met en défense si on a moins de 15PV
-								if (currentFighter.getCurrentLife() <= 15) {
-									choixStrat = "A" + currentFighter.getRank() + ",DEFEND,A" + currentFighter.getRank();
+								if (hero.getCurrentLife() <= 15) {
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",DEFEND,A" + hero.getOrderNumberInTeam();
 								} else if (scaredEnemy != null) {
 									//Si il y a un ennemi effrayé, on l'attaque
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + scaredEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + scaredEnemy.getOrderNumberInTeam();
 								} else {
 									//Sinon on attaque simplement la cible de prédilection
-									choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank();
+									choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" + targetEnemy.getOrderNumberInTeam();
 								}
 							}
 							
@@ -997,130 +941,130 @@ public class MoteurJeu {
 					
 				/*
 				 * //Si c'est un chaman if
-				 * (currentFighter.getFighterClass().contentEquals("CHAMAN")) { if
-				 * (currentFighter.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 2) { if (burntAlly != null) { choixStrat
-				 * = "A" + currentFighter.getRank() + ",CLEANSE,A" + burntAlly.getRank(); } else
+				 * (hero.getFighterClass().contentEquals("CHAMAN")) { if
+				 * (hero.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 2) { if (burntAlly != null) { choixStrat
+				 * = "A" + hero.getOrderNumberInTeam() + ",CLEANSE,A" + burntAlly.getOrderNumberInTeam(); } else
 				 * { //Si un allié a besoin d'un heal et que le heal é moins de 2 PA, on le
 				 * cleanse é condition d'avoir plus de 20PV if (needHealFighter != null &
 				 * healAlly != null) { if (healAlly.getCurrentMana() < 2 &
-				 * currentFighter.getCurrentLife() >= 20) { choixStrat = "A" +
-				 * currentFighter.getRank() + ",CLEANSE,A" + healAlly.getRank(); } else {
-				 * //Sinon choixStrat = "A" + currentFighter.getRank() + ",CLEANSE,A" +
-				 * currentFighter.getRank(); } } else if (noEffectsEnnemies == true) { //On
+				 * hero.getCurrentLife() >= 20) { choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",CLEANSE,A" + healAlly.getOrderNumberInTeam(); } else {
+				 * //Sinon choixStrat = "A" + hero.getOrderNumberInTeam() + ",CLEANSE,A" +
+				 * hero.getOrderNumberInTeam(); } } else if (noEffectsEnnemies == true) { //On
 				 * attaque simplement la cible de prédilection choixStrat = "A" +
-				 * currentFighter.getRank() + ",ATTACK,E" + targuetEnemy.getRank(); } else {
-				 * //Sinon choixStrat = "A" + currentFighter.getRank() + ",CLEANSE,A" +
-				 * currentFighter.getRank(); } } } else if (currentFighter.getCurrentMana() > 2)
-				 * { if (burntAlly != null) { choixStrat = "A" + currentFighter.getRank() +
-				 * ",CLEANSE,A" + burntAlly.getRank(); } else { //Si un allié a besoin d'un heal
+				 * hero.getOrderNumberInTeam() + ",ATTACK,E" + targetEnemy.getOrderNumberInTeam(); } else {
+				 * //Sinon choixStrat = "A" + hero.getOrderNumberInTeam() + ",CLEANSE,A" +
+				 * hero.getOrderNumberInTeam(); } } } else if (hero.getCurrentMana() > 2)
+				 * { if (burntAlly != null) { choixStrat = "A" + hero.getOrderNumberInTeam() +
+				 * ",CLEANSE,A" + burntAlly.getOrderNumberInTeam(); } else { //Si un allié a besoin d'un heal
 				 * et que le heal é moins de 2 PA, on le cleanse é condition d'avoir plus de
 				 * 20PV if (needHealFighter != null & healAlly != null) { if
-				 * (healAlly.getCurrentMana() < 2 & currentFighter.getCurrentLife() >= 20) {
-				 * choixStrat = "A" + currentFighter.getRank() + ",CLEANSE,A" +
-				 * healAlly.getRank(); } else { //Sinon choixStrat = "A" +
-				 * currentFighter.getRank() + ",CLEANSE,A" + currentFighter.getRank(); } } else
+				 * (healAlly.getCurrentMana() < 2 & hero.getCurrentLife() >= 20) {
+				 * choixStrat = "A" + hero.getOrderNumberInTeam() + ",CLEANSE,A" +
+				 * healAlly.getOrderNumberInTeam(); } else { //Sinon choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",CLEANSE,A" + hero.getOrderNumberInTeam(); } } else
 				 * if (noEffectsEnnemies == true) { //On attaque simplement la cible de
-				 * prédilection choixStrat = "A" + currentFighter.getRank() + ",ATTACK,E" +
-				 * targuetEnemy.getRank(); } else { //Sinon choixStrat = "A" +
-				 * currentFighter.getRank() + ",CLEANSE,A" + currentFighter.getRank(); } } } }
+				 * prédilection choixStrat = "A" + hero.getOrderNumberInTeam() + ",ATTACK,E" +
+				 * targetEnemy.getOrderNumberInTeam(); } else { //Sinon choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",CLEANSE,A" + hero.getOrderNumberInTeam(); } } } }
 				 * //fin du cas du chaman
 				 */
 					
 					
 				/*
 				 * //Si c'est un archer if
-				 * (currentFighter.getFighterClass().contentEquals("ARCHER")) { if
-				 * (currentFighter.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 2) { //On lance une fléche sur l'ennemi
-				 * de prédilection choixStrat = "A" + currentFighter.getRank() + ",FIREBOLT,E" +
-				 * targuetEnemy.getRank(); } else if (currentFighter.getCurrentMana() == 3) {
+				 * (hero.getFighterClass().contentEquals("ARCHER")) { if
+				 * (hero.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 2) { //On lance une fléche sur l'ennemi
+				 * de prédilection choixStrat = "A" + hero.getOrderNumberInTeam() + ",FIREBOLT,E" +
+				 * targetEnemy.getOrderNumberInTeam(); } else if (hero.getCurrentMana() == 3) {
 				 * //On lance une fléche sur l'ennemi de prédilection choixStrat = "A" +
-				 * currentFighter.getRank() + ",FIREBOLT,E" + targuetEnemy.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 4) { //On lance une fléche sur l'ennemi
-				 * de prédilection choixStrat = "A" + currentFighter.getRank() + ",FIREBOLT,E" +
-				 * targuetEnemy.getRank(); } } //fin du cas de l'archer
+				 * hero.getOrderNumberInTeam() + ",FIREBOLT,E" + targetEnemy.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 4) { //On lance une fléche sur l'ennemi
+				 * de prédilection choixStrat = "A" + hero.getOrderNumberInTeam() + ",FIREBOLT,E" +
+				 * targetEnemy.getOrderNumberInTeam(); } } //fin du cas de l'archer
 				 */
 					
 					
 					
 				/*
 				 * //Si c'est un paladin if
-				 * (currentFighter.getFighterClass().contentEquals("PALADIN")) { if
-				 * (currentFighter.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
-				 * currentFighter.getRank() + ",REST,A" + currentFighter.getRank(); } else if
-				 * (currentFighter.getCurrentMana() == 2) { //Si jamais le garde ennemi existe
+				 * (hero.getFighterClass().contentEquals("PALADIN")) { if
+				 * (hero.getCurrentMana() == 0) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 1) { //On ne fait rien choixStrat = "A" +
+				 * hero.getOrderNumberInTeam() + ",REST,A" + hero.getOrderNumberInTeam(); } else if
+				 * (hero.getCurrentMana() == 2) { //Si jamais le garde ennemi existe
 				 * if (guardEnemy != null) { if (guardEnemy.getCurrentMana() >= 2) { //Et qu'il
-				 * a deux PA ou plus, on le charge choixStrat = "A" + currentFighter.getRank() +
-				 * ",CHARGE,E" + guardEnemy.getRank(); paladinAjoue = true; } } //Si jamais le
+				 * a deux PA ou plus, on le charge choixStrat = "A" + hero.getOrderNumberInTeam() +
+				 * ",CHARGE,E" + guardEnemy.getOrderNumberInTeam(); paladinAjoue = true; } } //Si jamais le
 				 * prétre ennemi existe if (healEnemy != null) { if (healEnemy.getCurrentMana()
 				 * >= 2) { //Et qu'il a deux PA ou plus, on le charge choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + healEnemy.getRank(); paladinAjoue =
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + healEnemy.getOrderNumberInTeam(); paladinAjoue =
 				 * true; } } //Si jamais l'archer ennemi existe if (archerEnemy != null) { if
 				 * (archerEnemy.getCurrentMana() >= 2) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * archerEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * archerEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * //Si jamais le chaman ennemi existe if (chamanEnemy != null) { if
 				 * (chamanEnemy.getCurrentMana() >= 1) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * chamanEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * chamanEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * if (paladinAjoue == false) { //Si jamais il n'y a aucun garde, ni prétre, ni
 				 * archer on charge l'ennemi de prédilection choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + targuetEnemy.getRank(); } } else if
-				 * (currentFighter.getCurrentMana() == 3) { //Si jamais le garde ennemi existe
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + targetEnemy.getOrderNumberInTeam(); } } else if
+				 * (hero.getCurrentMana() == 3) { //Si jamais le garde ennemi existe
 				 * if (guardEnemy != null) { if (guardEnemy.getCurrentMana() >= 2) { //Et qu'il
-				 * a deux PA ou plus, on le charge choixStrat = "A" + currentFighter.getRank() +
-				 * ",CHARGE,E" + guardEnemy.getRank(); paladinAjoue = true; } } //Si jamais le
+				 * a deux PA ou plus, on le charge choixStrat = "A" + hero.getOrderNumberInTeam() +
+				 * ",CHARGE,E" + guardEnemy.getOrderNumberInTeam(); paladinAjoue = true; } } //Si jamais le
 				 * prétre ennemi existe if (healEnemy != null) { if (healEnemy.getCurrentMana()
 				 * >= 2) { //Et qu'il a deux PA ou plus, on le charge choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + healEnemy.getRank(); paladinAjoue =
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + healEnemy.getOrderNumberInTeam(); paladinAjoue =
 				 * true; } } //Si jamais l'archer ennemi existe if (archerEnemy != null) { if
 				 * (archerEnemy.getCurrentMana() >= 2) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * archerEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * archerEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * //Si jamais le chaman ennemi existe if (chamanEnemy != null) { if
 				 * (chamanEnemy.getCurrentMana() >= 1) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * chamanEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * chamanEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * if (paladinAjoue == false) { //Si jamais il n'y a aucun garde, ni prétre, ni
 				 * archer on charge l'ennemi de prédilection choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + targuetEnemy.getRank(); } } else if
-				 * (currentFighter.getCurrentMana() == 4) { //Si jamais le garde ennemi existe
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + targetEnemy.getOrderNumberInTeam(); } } else if
+				 * (hero.getCurrentMana() == 4) { //Si jamais le garde ennemi existe
 				 * if (guardEnemy != null) { if (guardEnemy.getCurrentMana() >= 1) { //Et qu'il
-				 * a deux PA ou plus, on le charge choixStrat = "A" + currentFighter.getRank() +
-				 * ",CHARGE,E" + guardEnemy.getRank(); paladinAjoue = true; } } //Si jamais le
+				 * a deux PA ou plus, on le charge choixStrat = "A" + hero.getOrderNumberInTeam() +
+				 * ",CHARGE,E" + guardEnemy.getOrderNumberInTeam(); paladinAjoue = true; } } //Si jamais le
 				 * prétre ennemi existe if (healEnemy != null) { if (healEnemy.getCurrentMana()
 				 * >= 1) { //Et qu'il a deux PA ou plus, on le charge choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + healEnemy.getRank(); paladinAjoue =
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + healEnemy.getOrderNumberInTeam(); paladinAjoue =
 				 * true; } } //Si jamais l'archer ennemi existe if (archerEnemy != null) { if
 				 * (archerEnemy.getCurrentMana() >= 1) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * archerEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * archerEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * //Si jamais le chaman ennemi existe if (chamanEnemy != null) { if
 				 * (chamanEnemy.getCurrentMana() >= 1) { //Et qu'il a deux PA ou plus, on le
-				 * charge choixStrat = "A" + currentFighter.getRank() + ",CHARGE,E" +
-				 * chamanEnemy.getRank(); paladinAjoue = true; } }
+				 * charge choixStrat = "A" + hero.getOrderNumberInTeam() + ",CHARGE,E" +
+				 * chamanEnemy.getOrderNumberInTeam(); paladinAjoue = true; } }
 				 * 
 				 * if (paladinAjoue == false) { //Si jamais il n'y a aucun garde, ni prétre, ni
 				 * archer on charge l'ennemi de prédilection choixStrat = "A" +
-				 * currentFighter.getRank() + ",CHARGE,E" + targuetEnemy.getRank(); } } } //fin
+				 * hero.getOrderNumberInTeam() + ",CHARGE,E" + targetEnemy.getOrderNumberInTeam(); } } } //fin
 				 * du cas du paladin
 				 */
 					
-			} else { //fin de la condition "n'est pas mort" -- if (currentFighter.getIsDead() == false)
+			} else { //fin de la condition "n'est pas mort" -- if (hero.getIsDead() == false)
 				//Si le personnage est mort
 				choixStrat = "";
 				System.out.println("DEBUG 3,17 - MORT");
