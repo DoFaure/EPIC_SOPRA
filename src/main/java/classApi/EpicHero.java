@@ -1,5 +1,6 @@
 package classApi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -30,13 +31,13 @@ public class EpicHero {
 	int currentLife;
 
 	@JsonProperty("states")
-	List<State> states;
+	List<State> states = new ArrayList<State>();
 
 	@JsonProperty("fighterID")
 	String fighterID;
 	
-	public Integer rank;
-
+	int rank;
+	
 	public Integer getRank() {
 		return rank;
 	}
@@ -44,6 +45,7 @@ public class EpicHero {
 	public void setRank(Integer a) {
 		this.rank = a;
 	}
+	
 	public String getFighterClass() {
 		return fighterClass;
 	}
