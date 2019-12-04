@@ -1,38 +1,51 @@
 package classApi;
+
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import epicProjectSS.*;
-
+@JsonIgnoreProperties(value = { "action", "receivedAttacks", "diffMana", "diffLife" })
 public class EpicHero {
 	
 	@JsonProperty("fighterClass")
 	String fighterClass;
-	
+
+
 	@JsonProperty("orderNumberInTeam")
 	int orderNumberInTeam;
-	
+
 	@JsonProperty("isDead")
 	boolean isDead;
-	
+
 	@JsonProperty("maxAvailableMana")
 	int maxAvailableMana;
-	
+
 	@JsonProperty("maxAvailableLife")
 	int maxAvailableLife;
-	
+
 	@JsonProperty("currentMana")
 	int currentMana;
-	
+
 	@JsonProperty("currentLife")
 	int currentLife;
-	
+
 	@JsonProperty("states")
-	List<State> states;
+	List<State> states = new ArrayList<State>();
+
+	@JsonProperty("fighterID")
+	String fighterID;
 	
-	@JsonProperty("fighterId")
-	int fighterID;
+	int rank;
+	
+	public Integer getRank() {
+		return rank;
+	}
+
+	public void setRank(Integer a) {
+		this.rank = a;
+	}
 	
 	public String getFighterClass() {
 		return fighterClass;
@@ -46,7 +59,7 @@ public class EpicHero {
 	public void setOrderNumberInTeam(int orderNumberInTeam) {
 		this.orderNumberInTeam = orderNumberInTeam;
 	}
-	public boolean isDead() {
+	public boolean getIsDead() {
 		return isDead;
 	}
 	public void setDead(boolean isDead) {
@@ -82,10 +95,11 @@ public class EpicHero {
 	public void setStates(List<State> states) {
 		this.states = states;
 	}
-	public int getFighterID() {
+	public String getFighterID() {
 		return fighterID;
 	}
-	public void setFighterID(int fighterID) {
+
+	public void setFighterID(String fighterID) {
 		this.fighterID = fighterID;
 	}
 

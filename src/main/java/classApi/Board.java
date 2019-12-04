@@ -1,10 +1,13 @@
 package classApi;
 import java.util.List;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import epicProjectSS.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(value = { "playerMoves" })
 public class Board {
 
 		@JsonProperty("playerId")
